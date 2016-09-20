@@ -312,7 +312,7 @@ pipe1(void)
     printf(1, "pipe() failed\n");
     exit();
   }
-  pid = fork0);
+  pid = fork(0);
   seq = 0;
   if(pid == 0){
     close(fds[0]);
