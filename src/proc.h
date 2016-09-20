@@ -3,7 +3,7 @@
 
 #define MAX_TICKETS 48
 #define DEFAULT_TICKETS 10
-#define MIN_TICKETS 1'
+#define MIN_TICKETS 1
 
 // Per-CPU state
 struct cpu {

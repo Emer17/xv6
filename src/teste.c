@@ -4,7 +4,7 @@
 #define STDOUT 1       
 
 int main(){
-    int pid = fork();
+    int pid = fork(0);
     if(pid > 0){
         printf(STDOUT,"parent: child=%d\n", pid);
         pid = wait();
@@ -15,7 +15,5 @@ int main(){
     } else {
         printf(STDOUT,"fork error\n");
     }
-    
-    
     exit();
 }
