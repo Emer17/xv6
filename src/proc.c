@@ -265,6 +265,31 @@ wait(void)
   }
 }
 
+int randstate=1;
+
+// random number any to give away a ticket
+int random(){ 
+  randstate = randstate * 1664525 + 1013904223;
+  if(randstate<0){
+    return (randstate*-1);
+  }
+  return randstate;
+}
+
+// account the ticket numbers that were distributed 
+// to processes in runnable state
+int ticketcount(){
+    int count=0;
+    struct proc *p;
+    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+        if(p->state == RUNNABLE){                                  //Danger: need critical region
+            count+=p->tickets;
+        }
+    }
+    return count;
+}
+
+
 //PAGEBREAK: 42
 // Per-CPU process scheduler.
 // Each CPU calls scheduler() after setting itself up.
@@ -277,6 +302,7 @@ void
 scheduler(void)
 {
   struct proc *p;
+  int distributed, raffled;
 
   for(;;){
     // Enable interrupts on this processor.
@@ -284,10 +310,20 @@ scheduler(void)
 
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
-    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-      if(p->state != RUNNABLE)
-        continue;
-
+    // distributes tickets to processes RUNNABLE
+    // and raffled a ticket
+    distributed=ticketcount();
+    if (distributed>0){
+      raffled=random()%distributed;                              
+      for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+        if(p->state == RUNNABLE){                               
+          raffled-=p->tickets;
+            if (raffled<0){
+              break;
+            }
+          }
+      }
+        
       // Switch to chosen process.  It is the process's job
       // to release ptable.lock and then reacquire it
       // before jumping back to us.
@@ -299,7 +335,7 @@ scheduler(void)
 
       // Process is done running for now.
       // It should have changed its p->state before coming back.
-      proc = 0;
+      proc = 0;   
     }
     release(&ptable.lock);
 
